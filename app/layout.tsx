@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,11 +25,39 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ThemeProvider
+          defaultTheme="system"
+          storageKey="ui-theme"
+        >
+          <div className="relative flex min-h-screen flex-col">
+            <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <div className="container flex h-14 max-w-screen-2xl items-center">
+                <div className="mr-4 hidden md:flex">
+                  <a className="mr-6 flex items-center space-x-2" href="/">
+                    <span className="hidden font-bold sm:inline-block">
+                      Generative UI
+                    </span>
+                  </a>
+                </div>
+                <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+                  <div className="w-full flex-1 md:w-auto md:flex-none">
+                    {/* Search or other header content can go here */}
+                  </div>
+                  <nav className="flex items-center">
+                    <ThemeToggle />
+                  </nav>
+                </div>
+              </div>
+            </header>
+            <main className="flex-1">
+              {children}
+            </main>
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );
