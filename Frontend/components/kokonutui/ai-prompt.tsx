@@ -10,7 +10,7 @@
  * @github: https://github.com/kokonut-labs/kokonutui
  */
 
-import { ArrowRight, Bot, Check, ChevronDown, Paperclip } from "lucide-react";
+import { ArrowRight, Bot, Check, ChevronDown, Paperclip, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -60,6 +60,7 @@ const OPENAI_SVG = (
 
 export default function AI_Prompt() {
     const [value, setValue] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
     const { textareaRef, adjustHeight } = useAutoResizeTextarea({
         minHeight: 72,
         maxHeight: 300,
@@ -136,11 +137,64 @@ export default function AI_Prompt() {
         "GPT-4-1": OPENAI_SVG,
     };
 
+    const callGenerateAppAPI = async (userPrompt: string) => {
+        try {
+            setIsLoading(true);
+            console.log("Calling API with prompt:", userPrompt);
+            
+            const response = await fetch("http://127.0.0.1:8000/generate-app", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    user_prompt: userPrompt,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            }
+
+            const result = await response.json();
+            console.log("✅ API Response received:");
+            console.log("Generated App Code:", result.app_jsx_code);
+            console.log("Used Components:", result.used_components);
+            console.log("Success:", result.success);
+            console.log("Message:", result.message);
+            
+            return result;
+        } catch (error) {
+            console.error("❌ Error calling generate-app API:", error);
+            if (error instanceof TypeError && error.message === "Failed to fetch") {
+                console.error("This usually means the backend server is not running or there's a CORS issue.");
+                console.error("Make sure the backend server is running on http://localhost:8000");
+            }
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSubmit = async () => {
+        if (!value.trim() || isLoading) return;
+        
+        const userPrompt = value.trim();
+        setValue("");
+        adjustHeight(true);
+        
+        try {
+            await callGenerateAppAPI(userPrompt);
+        } catch (error) {
+            console.error("Failed to generate app:", error);
+        }
+    };
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            setValue("");
-            adjustHeight(true);
+            handleSubmit();
         }
     };
 
@@ -277,21 +331,27 @@ export default function AI_Prompt() {
                                 </div>
                                 <button
                                     type="button"
+                                    onClick={handleSubmit}
                                     className={cn(
                                         "rounded-lg p-2 bg-black/5 dark:bg-white/5",
-                                        "hover:bg-black/10 dark:hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500"
+                                        "hover:bg-black/10 dark:hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500",
+                                        "disabled:opacity-50 disabled:cursor-not-allowed"
                                     )}
                                     aria-label="Send message"
-                                    disabled={!value.trim()}
+                                    disabled={!value.trim() || isLoading}
                                 >
-                                    <ArrowRight
-                                        className={cn(
-                                            "w-4 h-4 dark:text-white transition-opacity duration-200",
-                                            value.trim()
-                                                ? "opacity-100"
-                                                : "opacity-30"
-                                        )}
-                                    />
+                                    {isLoading ? (
+                                        <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                    ) : (
+                                        <ArrowRight
+                                            className={cn(
+                                                "w-4 h-4 dark:text-white transition-opacity duration-200",
+                                                value.trim()
+                                                    ? "opacity-100"
+                                                    : "opacity-30"
+                                            )}
+                                        />
+                                    )}
                                 </button>
                             </div>
                         </div>
