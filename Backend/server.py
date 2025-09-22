@@ -115,6 +115,7 @@ GENERATION RULES:
 8. Include proper state management where needed
 9. Ensure the app is interactive and functional
 10. Use proper component composition and organization
+11. don't use this @/components/ui/ instead use ./components/ui/ while  importing any component
 
 IMPORTANT CONSTRAINTS:
 - ONLY use components from the provided list
