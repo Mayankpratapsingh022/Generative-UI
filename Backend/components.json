@@ -1,0 +1,286 @@
+{
+    "shadcn_components": {
+      "accordion": {
+        "import": "import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'",
+        "component": "<Accordion>",
+        "items": ["AccordionItem", "AccordionTrigger", "AccordionContent"],
+        "props": ["type", "collapsible", "className", "defaultValue"]
+      },
+      "alert": {
+        "import": "import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'",
+        "component": "<Alert>",
+        "items": ["AlertTitle", "AlertDescription"],
+        "props": ["variant", "className"]
+      },
+      "alert_dialog": {
+        "import": "import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'",
+        "component": "<AlertDialog>",
+        "items": ["AlertDialogTrigger", "AlertDialogContent", "AlertDialogHeader", "AlertDialogTitle", "AlertDialogDescription", "AlertDialogFooter", "AlertDialogAction", "AlertDialogCancel"],
+        "props": ["open", "onOpenChange"]
+      },
+      "aspect_ratio": {
+        "import": "import { AspectRatio } from '@/components/ui/aspect-ratio'",
+        "component": "<AspectRatio>",
+        "items": [],
+        "props": ["ratio", "className"]
+      },
+      "avatar": {
+        "import": "import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'",
+        "component": "<Avatar>",
+        "items": ["AvatarImage", "AvatarFallback"],
+        "props": ["className"]
+      },
+      "badge": {
+        "import": "import { Badge, badgeVariants } from '@/components/ui/badge'",
+        "component": "<Badge>",
+        "items": [],
+        "props": ["variant", "className"]
+      },
+      "breadcrumb": {
+        "import": "import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'",
+        "component": "<Breadcrumb>",
+        "items": ["BreadcrumbList", "BreadcrumbItem", "BreadcrumbLink", "BreadcrumbPage", "BreadcrumbSeparator"],
+        "props": ["className"]
+      },
+      "button": {
+        "import": "import { Button } from '@/components/ui/button'",
+        "component": "<Button>",
+        "items": [],
+        "props": ["variant", "size", "className", "onClick", "disabled"]
+      },
+      "calendar": {
+        "import": "import { Calendar } from '@/components/ui/calendar'",
+        "component": "<Calendar>",
+        "items": [],
+        "props": ["mode", "selected", "onSelect", "className"]
+      },
+      "card": {
+        "import": "import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'",
+        "component": "<Card>",
+        "items": ["CardHeader", "CardTitle", "CardDescription", "CardContent", "CardFooter"],
+        "props": ["className"]
+      },
+      "carousel": {
+        "import": "import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'",
+        "component": "<Carousel>",
+        "items": ["CarouselContent", "CarouselItem", "CarouselPrevious", "CarouselNext"],
+        "props": ["className", "opts"]
+      },
+      "chart": {
+        "import": "import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'",
+        "component": "<ChartContainer>",
+        "items": ["ChartTooltip", "ChartTooltipContent"],
+        "props": ["className", "config"]
+      },
+      "checkbox": {
+        "import": "import { Checkbox } from '@/components/ui/checkbox'",
+        "component": "<Checkbox>",
+        "items": [],
+        "props": ["checked", "onCheckedChange", "disabled", "className"]
+      },
+      "collapsible": {
+        "import": "import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'",
+        "component": "<Collapsible>",
+        "items": ["CollapsibleTrigger", "CollapsibleContent"],
+        "props": ["open", "onOpenChange", "className"]
+      },
+      "combobox": {
+        "import": "import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut } from '@/components/ui/command'",
+        "component": "<Command>",
+        "items": ["CommandInput", "CommandList", "CommandEmpty", "CommandGroup", "CommandItem", "CommandSeparator", "CommandShortcut"],
+        "props": ["className"]
+      },
+      "command": {
+        "import": "import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut } from '@/components/ui/command'",
+        "component": "<Command>",
+        "items": ["CommandInput", "CommandList", "CommandEmpty", "CommandGroup", "CommandItem", "CommandSeparator", "CommandShortcut"],
+        "props": ["className"]
+      },
+      "context_menu": {
+        "import": "import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuCheckboxItem, ContextMenuRadioGroup, ContextMenuRadioItem, ContextMenuLabel, ContextMenuShortcut } from '@/components/ui/context-menu'",
+        "component": "<ContextMenu>",
+        "items": ["ContextMenuTrigger", "ContextMenuContent", "ContextMenuItem", "ContextMenuSeparator", "ContextMenuSub", "ContextMenuSubContent", "ContextMenuSubTrigger", "ContextMenuCheckboxItem", "ContextMenuRadioGroup", "ContextMenuRadioItem", "ContextMenuLabel", "ContextMenuShortcut"],
+        "props": ["className"]
+      },
+      "data_table": {
+        "import": "import { DataTable } from '@/components/ui/data-table'",
+        "component": "<DataTable>",
+        "items": [],
+        "props": ["columns", "data", "className"]
+      },
+      "dialog": {
+        "import": "import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'",
+        "component": "<Dialog>",
+        "items": ["DialogTrigger", "DialogContent", "DialogHeader", "DialogTitle", "DialogDescription", "DialogFooter"],
+        "props": ["open", "onOpenChange"]
+      },
+      "drawer": {
+        "import": "import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer'",
+        "component": "<Drawer>",
+        "items": ["DrawerTrigger", "DrawerContent", "DrawerHeader", "DrawerTitle", "DrawerDescription", "DrawerFooter", "DrawerClose"],
+        "props": ["open", "onOpenChange"]
+      },
+      "dropdown_menu": {
+        "import": "import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu'",
+        "component": "<DropdownMenu>",
+        "items": ["DropdownMenuTrigger", "DropdownMenuContent", "DropdownMenuItem", "DropdownMenuSeparator", "DropdownMenuLabel"],
+        "props": ["className"]
+      },
+      "hover_card": {
+        "import": "import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'",
+        "component": "<HoverCard>",
+        "items": ["HoverCardTrigger", "HoverCardContent"],
+        "props": ["className"]
+      },
+      "input": {
+        "import": "import { Input } from '@/components/ui/input'",
+        "component": "<Input>",
+        "items": [],
+        "props": ["type", "placeholder", "value", "onChange", "className", "disabled"]
+      },
+      "input_otp": {
+        "import": "import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'",
+        "component": "<InputOTP>",
+        "items": ["InputOTPGroup", "InputOTPSlot"],
+        "props": ["value", "onChange", "maxLength", "className"]
+      },
+      "label": {
+        "import": "import { Label } from '@/components/ui/label'",
+        "component": "<Label>",
+        "items": [],
+        "props": ["htmlFor", "className"]
+      },
+      "menubar": {
+        "import": "import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarSeparator, MenubarSub, MenubarSubContent, MenubarSubTrigger, MenubarTrigger } from '@/components/ui/menubar'",
+        "component": "<Menubar>",
+        "items": ["MenubarMenu", "MenubarTrigger", "MenubarContent", "MenubarItem", "MenubarSeparator", "MenubarSub", "MenubarSubTrigger", "MenubarSubContent"],
+        "props": ["className"]
+      },
+      "navigation_menu": {
+        "import": "import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu'",
+        "component": "<NavigationMenu>",
+        "items": ["NavigationMenuList", "NavigationMenuItem", "NavigationMenuTrigger", "NavigationMenuContent", "NavigationMenuLink"],
+        "props": ["className"]
+      },
+      "pagination": {
+        "import": "import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'",
+        "component": "<Pagination>",
+        "items": ["PaginationContent", "PaginationItem", "PaginationLink", "PaginationPrevious", "PaginationNext", "PaginationEllipsis"],
+        "props": ["className"]
+      },
+      "popover": {
+        "import": "import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'",
+        "component": "<Popover>",
+        "items": ["PopoverTrigger", "PopoverContent"],
+        "props": ["open", "onOpenChange"]
+      },
+      "progress": {
+        "import": "import { Progress } from '@/components/ui/progress'",
+        "component": "<Progress>",
+        "items": [],
+        "props": ["value", "max", "className"]
+      },
+      "radio_group": {
+        "import": "import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'",
+        "component": "<RadioGroup>",
+        "items": ["RadioGroupItem"],
+        "props": ["value", "onValueChange", "className"]
+      },
+      "resizable": {
+        "import": "import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'",
+        "component": "<ResizablePanelGroup>",
+        "items": ["ResizablePanel", "ResizableHandle"],
+        "props": ["direction", "className"]
+      },
+      "scroll_area": {
+        "import": "import { ScrollArea } from '@/components/ui/scroll-area'",
+        "component": "<ScrollArea>",
+        "items": [],
+        "props": ["className"]
+      },
+      "select": {
+        "import": "import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'",
+        "component": "<Select>",
+        "items": ["SelectTrigger", "SelectValue", "SelectContent", "SelectItem"],
+        "props": ["value", "onValueChange", "disabled"]
+      },
+      "separator": {
+        "import": "import { Separator } from '@/components/ui/separator'",
+        "component": "<Separator>",
+        "items": [],
+        "props": ["orientation", "className"]
+      },
+      "sheet": {
+        "import": "import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'",
+        "component": "<Sheet>",
+        "items": ["SheetTrigger", "SheetContent", "SheetHeader", "SheetTitle", "SheetDescription", "SheetFooter"],
+        "props": ["open", "onOpenChange"]
+      },
+      "sidebar": {
+        "import": "import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'",
+        "component": "<SidebarProvider>",
+        "items": ["Sidebar", "SidebarTrigger", "SidebarContent", "SidebarHeader", "SidebarFooter", "SidebarGroup", "SidebarGroupLabel", "SidebarGroupContent", "SidebarMenu", "SidebarMenuItem", "SidebarMenuButton", "SidebarMenuSub", "SidebarMenuSubItem", "SidebarMenuSubButton"],
+        "props": ["className"]
+      },
+      "skeleton": {
+        "import": "import { Skeleton } from '@/components/ui/skeleton'",
+        "component": "<Skeleton>",
+        "items": [],
+        "props": ["className"]
+      },
+      "slider": {
+        "import": "import { Slider } from '@/components/ui/slider'",
+        "component": "<Slider>",
+        "items": [],
+        "props": ["value", "onValueChange", "min", "max", "step", "className"]
+      },
+      "sonner": {
+        "import": "import { Toaster } from '@/components/ui/sonner'",
+        "component": "<Toaster>",
+        "items": [],
+        "props": ["position", "toastOptions", "className"]
+      },
+      "switch": {
+        "import": "import { Switch } from '@/components/ui/switch'",
+        "component": "<Switch>",
+        "items": [],
+        "props": ["checked", "onCheckedChange", "disabled", "className"]
+      },
+      "table": {
+        "import": "import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'",
+        "component": "<Table>",
+        "items": ["TableHeader", "TableBody", "TableRow", "TableHead", "TableCell", "TableCaption"],
+        "props": ["className"]
+      },
+      "tabs": {
+        "import": "import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'",
+        "component": "<Tabs>",
+        "items": ["TabsList", "TabsTrigger", "TabsContent"],
+        "props": ["value", "onValueChange", "className", "defaultValue"]
+      },
+      "textarea": {
+        "import": "import { Textarea } from '@/components/ui/textarea'",
+        "component": "<Textarea>",
+        "items": [],
+        "props": ["placeholder", "value", "onChange", "rows", "className", "disabled"]
+      },
+      "toast": {
+        "import": "import { useToast } from '@/components/ui/use-toast'",
+        "component": "useToast",
+        "items": ["toast", "dismiss"],
+        "props": []
+      },
+      "toggle": {
+        "import": "import { Toggle } from '@/components/ui/toggle'",
+        "component": "<Toggle>",
+        "items": [],
+        "props": ["pressed", "onPressedChange", "className"]
+      },
+      "tooltip": {
+        "import": "import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'",
+        "component": "<TooltipProvider>",
+        "items": ["Tooltip", "TooltipTrigger", "TooltipContent"],
+        "props": ["delayDuration", "className"]
+      }
+    }
+  }
