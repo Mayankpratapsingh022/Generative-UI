@@ -1,0 +1,125 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+Frontend/node_modules
+Frontend/.pnp
+Frontend/.pnp.*
+Frontend/.yarn/*
+!Frontend/.yarn/patches
+!Frontend/.yarn/plugins
+!Frontend/.yarn/releases
+!Frontend/.yarn/versions
+
+# testing
+Frontend/coverage
+
+# next.js
+Frontend/.next/
+Frontend/out/
+
+# production
+Frontend/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+Frontend/npm-debug.log*
+Frontend/yarn-debug.log*
+Frontend/yarn-error.log*
+Frontend/.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+Backend/.env*
+
+# vercel
+Frontend/.vercel
+
+# typescript
+Frontend/*.tsbuildinfo
+Frontend/next-env.d.ts
+
+# Python
+Backend/__pycache__/
+Backend/*.py[cod]
+Backend/*$py.class
+Backend/*.so
+Backend/.Python
+Backend/env/
+Backend/venv/
+Backend/ENV/
+Backend/env.bak/
+Backend/venv.bak/
+Backend/.venv/
+
+# PyInstaller
+Backend/*.manifest
+Backend/*.spec
+
+# Installer logs
+Backend/pip-log.txt
+Backend/pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+Backend/htmlcov/
+Backend/.tox/
+Backend/.coverage
+Backend/.coverage.*
+Backend/.cache
+Backend/nosetests.xml
+Backend/coverage.xml
+Backend/*.cover
+Backend/.hypothesis/
+Backend/.pytest_cache/
+
+# Jupyter Notebook
+Backend/.ipynb_checkpoints
+
+# IPython
+Backend/profile_default/
+Backend/ipython_config.py
+
+# pyenv
+Backend/.python-version
+
+# pipenv
+Backend/Pipfile.lock
+
+# PEP 582
+Backend/__pypackages__/
+
+# Celery stuff
+Backend/celerybeat-schedule
+Backend/celerybeat.pid
+
+# SageMath parsed files
+Backend/*.sage.py
+
+# Environments
+Backend/.env
+Backend/.venv
+Backend/env/
+Backend/venv/
+Backend/ENV/
+Backend/env.bak/
+Backend/venv.bak/
+
+# Spyder project settings
+Backend/.spyderproject
+Backend/.spyproject
+
+# Rope project settings
+Backend/.ropeproject
+
+# mkdocs documentation
+Backend/site/
+
+# mypy
+Backend/.mypy_cache/
+Backend/.dmypy.json
+Backend/dmypy.json
+
+# Pyre type checker
+Backend/.pyre/
