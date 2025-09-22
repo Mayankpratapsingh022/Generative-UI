@@ -145,7 +145,7 @@ export default function AI_Prompt() {
     };
 
     return (
-        <div className="w-4/6 py-4">
+        <div className="w-full max-w-2xl mx-auto py-4">
             <div className="bg-black/5 dark:bg-white/5 rounded-2xl p-1.5 pt-4">
                 <div className="flex items-center gap-2 mb-2.5 mx-2">
                     <div className="flex-1 flex items-center gap-2">
