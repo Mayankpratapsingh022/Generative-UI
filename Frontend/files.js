@@ -1,6 +1,6 @@
 /** @type {import('@webcontainer/api').FileSystemTree} */
 
-const files = {
+export const files = {
   // Root configuration files
   'package.json': {
     file: {
@@ -1231,5 +1231,3 @@ export function cn(...inputs: ClassValue[]) {
     },
   },
 };
-
-await webcontainerInstance.mount(files);
