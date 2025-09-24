@@ -124,6 +124,7 @@ IMPORTANT CONSTRAINTS:
 - Generate clean, production-ready code
 - Include error handling where appropriate
 - Use TypeScript-style props when beneficial
+- don't use this component (toast) not there in shadcnuse-toast
 
 RESPONSE FORMAT:
 Return only the complete app.jsx file code, nothing else."""
