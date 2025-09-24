@@ -15,6 +15,9 @@ import {
   MorphingDialogTitle,
   MorphingDialogClose,
 } from "@/components/motion-primitives/morphing-dialog";
+import WebContainerLoadingPopup from "@/components/WebContainerLoadingPopup";
+import { useWebContainerReady } from "@/components/WebContainerPreloader";
+import AILoadingState from "@/components/kokonutui/ai-loading";
 
 type Role = "user" | "assistant";
 
@@ -23,6 +26,7 @@ type ChatMessage = {
   role: Role;
   content?: string;
   showPreview?: boolean;
+  showLoading?: boolean;
 };
 
 export default function ChatUI() {
@@ -36,7 +40,10 @@ export default function ChatUI() {
   ]);
   const [value, setValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showLoadingPopup, setShowLoadingPopup] = useState(false);
+  const [showWebContainer, setShowWebContainer] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isWebContainerReady = useWebContainerReady();
 
   const scrollToBottom = useCallback(() => {
     containerRef.current?.scrollTo({ top: containerRef.current.scrollHeight, behavior: "smooth" });
@@ -72,33 +79,61 @@ export default function ChatUI() {
       { id: crypto.randomUUID(), role: "user", content: userPrompt },
     ]);
 
+    // Add loading message first
+    const loadingMessageId = crypto.randomUUID();
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: loadingMessageId,
+        role: "assistant",
+        showLoading: true,
+      },
+    ]);
+
+    // Show loading popup only if WebContainer is not ready yet
+    if (!isWebContainerReady) {
+      setShowLoadingPopup(true);
+    }
+
     try {
       const result = await callGenerateAppAPI(userPrompt);
       if (result?.app_jsx_code) {
-        await ensureWebContainer();
+        // WebContainer is already pre-loaded, just update the app code
         await updateAppTsx(result.app_jsx_code);
+        
+        // Replace loading message with preview message
+        setMessages((prev) => 
+          prev.map((msg) => 
+            msg.id === loadingMessageId 
+              ? { id: crypto.randomUUID(), role: "assistant", showPreview: true }
+              : msg
+          )
+        );
+        
+        setShowWebContainer(true);
       }
-      // Add assistant bubble on the left with the preview iframe
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          showPreview: true,
-        },
-      ]);
     } catch (e) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content:
-            (e as Error)?.message || "Something went wrong while generating the app.",
-        },
-      ]);
+      // Replace loading message with error message
+      setMessages((prev) => 
+        prev.map((msg) => 
+          msg.id === loadingMessageId 
+            ? { 
+                id: crypto.randomUUID(), 
+                role: "assistant", 
+                content: (e as Error)?.message || "Something went wrong while generating the app."
+              }
+            : msg
+        )
+      );
+    } finally {
+      // Hide loading popup if it was shown
+      if (!isWebContainerReady) {
+        setTimeout(() => {
+          setShowLoadingPopup(false);
+        }, 1000);
+      }
     }
-  }, [value, isLoading, callGenerateAppAPI]);
+  }, [value, isLoading, callGenerateAppAPI, isWebContainerReady]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -124,7 +159,24 @@ export default function ChatUI() {
         >
           {messages.map((m) => (
             <div key={m.id} className="w-full"> 
-              {m.showPreview ? (
+              {m.showLoading ? (
+                <div className="w-full">
+                  <div className="flex gap-6 items-start">
+                    <div className="w-80 flex-shrink-0">
+                      <div className="space-y-3">
+                        <div className="rounded-lg border bg-card text-card-foreground p-3">
+                          <div className="text-sm text-muted-foreground">Generating your app...</div>
+                        </div>
+                        <div className="h-[400px]">
+                          <div className="w-full h-full rounded-lg border bg-card text-card-foreground overflow-hidden flex items-center justify-center">
+                            <AILoadingState />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : m.showPreview ? (
                 <div className="w-full">
                   <div className="flex gap-6 items-start">
                     <div className="w-80 flex-shrink-0">
@@ -140,29 +192,24 @@ export default function ChatUI() {
                                   <Maximize2 className="h-4 w-4" />
                                 </div>
                               </div>
-                              <WebContainerPreview />
+                              {showWebContainer && <WebContainerPreview />}
                             </MorphingDialogTrigger>
-                            
-                            <MorphingDialogContainer>
-                              <MorphingDialogContent className="w-full h-full max-w-7xl max-h-[90vh] bg-background rounded-lg border shadow-lg flex flex-col">
-                                <div className="flex items-center justify-between p-4 border-b">
-                                  <MorphingDialogTitle className="text-lg font-semibold">
-                                    WebContainer Preview
-                                  </MorphingDialogTitle>
-                                  <MorphingDialogClose />
-                                </div>
-                                <div className="flex-1 p-4">
-                                  <WebContainerPreview />
-                                </div>
-                              </MorphingDialogContent>
-                            </MorphingDialogContainer>
-                          </MorphingDialog>
+                          
+                          <MorphingDialogContainer>
+                            <MorphingDialogContent className="w-full h-full max-w-7xl max-h-[90vh] bg-background rounded-lg border shadow-lg flex flex-col">
+                              <div className="flex items-center justify-between p-4 border-b">
+                                <MorphingDialogTitle className="text-lg font-semibold">
+                                  WebContainer Preview
+                                </MorphingDialogTitle>
+                                <MorphingDialogClose />
+                              </div>
+                              <div className="flex-1 p-4">
+                                {showWebContainer && <WebContainerPreview />}
+                              </div>
+                            </MorphingDialogContent>
+                          </MorphingDialogContainer>
+                        </MorphingDialog>
                         </div>
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="rounded-lg border bg-card text-card-foreground p-4">
-                        {m.content && <div className="whitespace-pre-wrap text-sm">{m.content}</div>}
                       </div>
                     </div>
                   </div>
@@ -203,6 +250,13 @@ export default function ChatUI() {
         </div>
       </div>
 
+      {/* Loading Popup */}
+      {showLoadingPopup && (
+        <WebContainerLoadingPopup 
+          isVisible={showLoadingPopup}
+          onComplete={() => setShowLoadingPopup(false)}
+        />
+      )}
     </>
   );
 }
