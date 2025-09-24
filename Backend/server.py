@@ -37,7 +37,7 @@ class AppGenerationResponse(BaseModel):
     message: str
 
 # Initialize OpenAI LLM
-llm = ChatOpenAI(model="gpt-4o", temperature=0.1)
+llm = ChatOpenAI(model="gpt-5-2025-08-07", temperature=0.1)
 
 class ShadcnComponentParser:
     """Parser for shadcn components.json file"""
@@ -106,17 +106,16 @@ class ReactAppGenerator:
 
 GENERATION RULES:
 1. Generate ONLY a single app.jsx file - no other files
-2. Use ONLY the shadcn components listed above
+2. Use the shadcn components listed above, if something is not available in the shadcn components.json file, you have control to add custom tailwind classes and customer elements (for example canvas etc stuff, Make sure your main job is to give working app's whatever it takes to do that do it ) as well, something which is not available in the shadcn components.json file, but make sure what ever you are giving has a good consistent design and look (similar to shadcn)
 3. Create a complete, functional React application
-4. Use modern React patterns (functional components, hooks)
+4. Use modern React patterns (functional components,)
 5. Include proper imports for used shadcn components
-6. Don't use extra css or tailwind for styling components, use the default shadcn styles, only use tailwind for layout and formatting etc
 8. Make the app responsive and visually appealing
 8. Include proper state management where needed
 9. Ensure the app is interactive and functional
 10. Use proper component composition and organization
 11. don't use this @/components/ui/ instead use ./components/ui/ while  importing any component
-12. You have control to add custom tailwind classes and customer elements as well, something which is not available in the shadcn components.json file, but make sure what ever you are giving has a good consistent design and look (similar to shadcn)
+12. You have control to add custom tailwind classes and customer elements (for example canvas etc stuff, Make sure your main job is to give working app's whatever it takes to do that do it ) as well, something which is not available in the shadcn components.json file, but make sure what ever you are giving has a good consistent design and look (similar to shadcn)
 
 IMPORTANT CONSTRAINTS:
 - ONLY use components from the provided list
