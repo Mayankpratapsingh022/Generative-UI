@@ -23,6 +23,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "motion/react";
+import { ensureWebContainer, updateAppTsx } from "@/lib/webcontainerClient";
 import Anthropic from "@/components/kokonutui/anthropic";
 import AnthropicDark from "@/components/kokonutui/anthropic-dark";
 
@@ -185,7 +186,11 @@ export default function AI_Prompt() {
         adjustHeight(true);
         
         try {
-            await callGenerateAppAPI(userPrompt);
+            const result = await callGenerateAppAPI(userPrompt);
+            if (result?.app_jsx_code) {
+                await ensureWebContainer();
+                await updateAppTsx(result.app_jsx_code);
+            }
         } catch (error) {
             console.error("Failed to generate app:", error);
         }

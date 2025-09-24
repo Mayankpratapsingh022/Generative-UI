@@ -65,4 +65,25 @@ export async function ensureWebContainer() {
   return wc;
 }
 
+export async function writeFileInWebContainer(path: string, contents: string) {
+  const wc = await ensureWebContainer();
+  // ensureWebContainer may return void on server; guard in client
+  // @ts-expect-error runtime guard
+  if (!wc) return;
+  // @ts-expect-error wc exists on client
+  await wc.fs.writeFile(path, contents);
+}
+
+export async function updateAppTsx(appCode: string) {
+  // Some responses may come fenced like ```jsx ... ```; strip fences
+  const cleaned = stripMarkdownFences(appCode);
+  await writeFileInWebContainer("/src/App.tsx", cleaned);
+}
+
+function stripMarkdownFences(code: string) {
+  const fenceMatch = code.match(/```[a-zA-Z]*\n([\s\S]*?)```/);
+  if (fenceMatch) return fenceMatch[1].trim() + "\n";
+  return code;
+}
+
 
