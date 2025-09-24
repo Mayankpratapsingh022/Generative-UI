@@ -380,6 +380,23 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
+// Synchronize theme with parent (extension / Next app)
+function applyTheme(theme) {
+  const root = document.documentElement
+  root.classList.remove('light', 'dark')
+  root.classList.add(theme === 'dark' ? 'dark' : 'light')
+}
+
+window.addEventListener('message', (event) => {
+  const data = event?.data
+  if (data && data.type === 'THEME' && (data.theme === 'light' || data.theme === 'dark')) {
+    applyTheme(data.theme)
+  }
+})
+
+// Set an initial theme to avoid flash while waiting for a message
+applyTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
