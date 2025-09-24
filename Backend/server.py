@@ -116,6 +116,7 @@ GENERATION RULES:
 9. Ensure the app is interactive and functional
 10. Use proper component composition and organization
 11. don't use this @/components/ui/ instead use ./components/ui/ while  importing any component
+12. You have control to add custom tailwind classes and customer elements as well, something which is not available in the shadcn components.json file, but make sure what ever you are giving has a good consistent design and look (similar to shadcn)
 
 IMPORTANT CONSTRAINTS:
 - ONLY use components from the provided list
