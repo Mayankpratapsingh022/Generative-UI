@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
-import { ensureWebContainer, updateAppTsx } from "@/lib/webcontainerClient";
+import { ensureWebContainer, saveAppVersion } from "@/lib/webcontainerClient";
 
 export default function AI_Input_Search() {
     const [value, setValue] = useState("");
@@ -54,7 +54,7 @@ export default function AI_Input_Search() {
             const result = await callGenerateAppAPI(userPrompt);
             if (result?.app_jsx_code) {
                 await ensureWebContainer();
-                await updateAppTsx(result.app_jsx_code);
+                await saveAppVersion(result.app_jsx_code, value.trim());
             }
         } catch (error) {
             console.error("Failed to generate app:", error);
