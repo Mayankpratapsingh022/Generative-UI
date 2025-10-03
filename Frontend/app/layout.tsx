@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import WebContainerPreloader from "@/components/WebContainerPreloader";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,25 +36,11 @@ export default function RootLayout({
           storageKey="ui-theme"
         >
           <WebContainerPreloader />
-          <div className="relative flex min-h-screen flex-col">
-            <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <div className="flex h-14 w-full items-center justify-between px-6">
-                <div className="flex items-center">
-                  <a className="flex items-center space-x-2" href="/">
-                    <span className="font-bold text-foreground">
-                      Generative UI
-                    </span>
-                  </a>
-                </div>
-                <div className="flex items-center">
-                  <ThemeToggle />
-                </div>
-              </div>
-            </header>
-            <main className="flex-1 flex items-center justify-center bg-background">
+          <SidebarProvider>
+            <div className="relative flex min-h-screen w-full">
               {children}
-            </main>
-          </div>
+            </div>
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>

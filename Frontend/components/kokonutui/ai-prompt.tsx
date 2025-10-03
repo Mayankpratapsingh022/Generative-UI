@@ -59,7 +59,12 @@ const OPENAI_SVG = (
     </div>
 );
 
-export default function AI_Prompt() {
+interface AI_PromptProps {
+    onMessageSubmit?: (message: string) => void;
+    isLoading?: boolean;
+}
+
+export default function AI_Prompt({ onMessageSubmit, isLoading: externalLoading = false }: AI_PromptProps) {
     const [value, setValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { textareaRef, adjustHeight } = useAutoResizeTextarea({
@@ -67,6 +72,8 @@ export default function AI_Prompt() {
         maxHeight: 300,
     });
     const [selectedModel, setSelectedModel] = useState("GPT-4-1 Mini");
+    
+    const isActuallyLoading = isLoading || externalLoading;
 
     const AI_MODELS = [
         "o3-mini",
@@ -179,12 +186,19 @@ export default function AI_Prompt() {
     };
 
     const handleSubmit = async () => {
-        if (!value.trim() || isLoading) return;
+        if (!value.trim() || isActuallyLoading) return;
         
         const userPrompt = value.trim();
         setValue("");
         adjustHeight(true);
         
+        // Call the parent callback if provided
+        if (onMessageSubmit) {
+            onMessageSubmit(userPrompt);
+            return;
+        }
+        
+        // Fallback to original behavior
         try {
             const result = await callGenerateAppAPI(userPrompt);
             if (result?.app_jsx_code) {
@@ -204,13 +218,13 @@ export default function AI_Prompt() {
     };
 
     return (
-        <div className="w-full max-w-2xl mx-auto py-4">
-            <div className="bg-black/5 dark:bg-white/5 rounded-2xl p-1.5 pt-4">
+        <div className="w-full py-4">
+            <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl p-1.5 pt-4">
                 <div className="flex items-center gap-2 mb-2.5 mx-2">
                     <div className="flex-1 flex items-center gap-2">
                         {/* <Anthropic className="h-3.5 w-3.5 text-black dark:hidden" />
                         <AnthropicDark className="h-3.5 w-3.5 hidden dark:block" /> */}
-                        <h3 className="text-black dark:text-white/90 text-xs tracking-tighter">
+                        <h3 className="text-neutral-900 dark:text-neutral-100 text-xs tracking-tighter">
                             Try Generative UI
                         </h3>
                     </div>
@@ -239,7 +253,7 @@ export default function AI_Prompt() {
                                 value={value}
                                 placeholder={"What can I do for you?"}
                                 className={cn(
-                                    "w-full rounded-xl rounded-b-none px-4 py-3 bg-black/5 dark:bg-white/5 border-none dark:text-white placeholder:text-black/70 dark:placeholder:text-white/70 resize-none focus-visible:ring-0 focus-visible:ring-offset-0",
+                                    "w-full rounded-xl rounded-b-none px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border-none text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-500 dark:placeholder:text-neutral-400 resize-none focus-visible:ring-0 focus-visible:ring-offset-0",
                                     "min-h-[72px]"
                                 )}
                                 ref={textareaRef}
@@ -251,14 +265,14 @@ export default function AI_Prompt() {
                             />
                         </div>
 
-                        <div className="h-14 bg-black/5 dark:bg-white/5 rounded-b-xl flex items-center">
+                        <div className="h-14 bg-neutral-50 dark:bg-neutral-800 rounded-b-xl flex items-center">
                             <div className="absolute left-3 right-3 bottom-3 flex items-center justify-between w-[calc(100%-24px)]">
                                 <div className="flex items-center gap-2">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button
                                                 variant="ghost"
-                                                className="flex items-center gap-1 h-8 pl-1 pr-2 text-xs rounded-md dark:text-white hover:bg-black/10 dark:hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500"
+                                                className="flex items-center gap-1 h-8 pl-1 pr-2 text-xs rounded-md text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500"
                                             >
                                                 <AnimatePresence mode="wait">
                                                     <motion.div
@@ -294,8 +308,8 @@ export default function AI_Prompt() {
                                         <DropdownMenuContent
                                             className={cn(
                                                 "min-w-[10rem]",
-                                                "border-black/10 dark:border-white/10",
-                                                "bg-gradient-to-b from-white via-white to-neutral-100 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-800"
+                                                "border-neutral-200 dark:border-neutral-700",
+                                                "bg-white dark:bg-neutral-900"
                                             )}
                                         >
                                             {AI_MODELS.map((model) => (
@@ -321,12 +335,12 @@ export default function AI_Prompt() {
                                             ))}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                    <div className="h-4 w-px bg-black/10 dark:bg-white/10 mx-0.5" />
+                                    <div className="h-4 w-px bg-neutral-300 dark:bg-neutral-600 mx-0.5" />
                                     <label
                                         className={cn(
-                                            "rounded-lg p-2 bg-black/5 dark:bg-white/5 cursor-pointer",
-                                            "hover:bg-black/10 dark:hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500",
-                                            "text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white"
+                                            "rounded-lg p-2 bg-neutral-100 dark:bg-neutral-800 cursor-pointer",
+                                            "hover:bg-neutral-200 dark:hover:bg-neutral-700 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500",
+                                            "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
                                         )}
                                         aria-label="Attach file"
                                     >
@@ -338,19 +352,19 @@ export default function AI_Prompt() {
                                     type="button"
                                     onClick={handleSubmit}
                                     className={cn(
-                                        "rounded-lg p-2 bg-black/5 dark:bg-white/5",
-                                        "hover:bg-black/10 dark:hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500",
+                                        "rounded-lg p-2 bg-neutral-100 dark:bg-neutral-800",
+                                        "hover:bg-neutral-200 dark:hover:bg-neutral-700 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500",
                                         "disabled:opacity-50 disabled:cursor-not-allowed"
                                     )}
                                     aria-label="Send message"
-                                    disabled={!value.trim() || isLoading}
+                                    disabled={!value.trim() || isActuallyLoading}
                                 >
-                                    {isLoading ? (
-                                        <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                    {isActuallyLoading ? (
+                                        <Loader2 className="w-4 h-4 text-neutral-600 dark:text-neutral-300 animate-spin" />
                                     ) : (
                                         <ArrowRight
                                             className={cn(
-                                                "w-4 h-4 dark:text-white transition-opacity duration-200",
+                                                "w-4 h-4 text-neutral-600 dark:text-neutral-300 transition-opacity duration-200",
                                                 value.trim()
                                                     ? "opacity-100"
                                                     : "opacity-30"

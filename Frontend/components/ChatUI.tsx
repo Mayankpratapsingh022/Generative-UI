@@ -1,13 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import WebContainerPreview from "@/components/WebContainerPreview";
 import AppScreenshotPreview from "@/components/AppScreenshotPreview";
 import { ensureWebContainer, saveAppVersion, getAllAppVersions, switchToAppVersion, getCurrentAppId, onAppVersionsChange, type AppVersion } from "@/lib/webcontainerClient";
-import { Loader2, Maximize2, ChevronDown } from "lucide-react";
+import { Loader2, Maximize2 } from "lucide-react";
 import {
   MorphingDialog,
   MorphingDialogTrigger,
@@ -16,15 +15,11 @@ import {
   MorphingDialogTitle,
   MorphingDialogClose,
 } from "@/components/motion-primitives/morphing-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import WebContainerLoadingPopup from "@/components/WebContainerLoadingPopup";
 import { useWebContainerReady } from "@/components/WebContainerPreloader";
 import AILoadingState from "@/components/kokonutui/ai-loading";
+import AI_Input_Search from "@/components/kokonutui/ai-input-search";
+import { ChatMessage, type Message } from "@/components/ui/chat-message";
 
 type Role = "user" | "assistant";
 
@@ -48,317 +43,259 @@ export default function ChatUI() {
         "Hi! Tell me what to build and I'll generate and run it below.",
     },
   ]);
-  const [value, setValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showLoadingPopup, setShowLoadingPopup] = useState(false);
   const [showWebContainer, setShowWebContainer] = useState(false);
+  const [showLoadingPopup, setShowLoadingPopup] = useState(false);
   const [appVersions, setAppVersions] = useState<AppVersion[]>([]);
-  const [currentAppId, setCurrentAppId] = useState<string | undefined>();
+  const [currentAppId, setCurrentAppId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isWebContainerReady = useWebContainerReady();
 
-  const scrollToBottom = useCallback(() => {
-    containerRef.current?.scrollTo({ top: containerRef.current.scrollHeight, behavior: "smooth" });
-  }, []);
-
+  // Load app versions on mount
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
+    const loadAppVersions = async () => {
+      try {
+        const versions = await getAllAppVersions();
+        setAppVersions(versions);
+        if (versions.length > 0) {
+          setCurrentAppId(versions[0].id);
+        }
+      } catch (error) {
+        console.error("Error loading app versions:", error);
+      }
+    };
 
-  // Load existing app versions on mount and listen for changes
-  useEffect(() => {
-    const versions = getAllAppVersions();
-    setAppVersions(versions);
-    setCurrentAppId(getCurrentAppId());
+    loadAppVersions();
 
-    // Listen for version changes (e.g., when screenshots are captured)
-    const removeListener = onAppVersionsChange(() => {
-      const updatedVersions = getAllAppVersions();
-      setAppVersions(updatedVersions);
+    // Listen for app versions changes
+    const unsubscribe = onAppVersionsChange(() => {
+      // Reload app versions when they change
+      loadAppVersions();
     });
 
     return () => {
-      removeListener();
+      unsubscribe();
     };
   }, []);
 
-  const callGenerateAppAPI = useCallback(async (userPrompt: string) => {
+  const handleSubmit = useCallback(async (message?: string) => {
+    const messageContent = message || "";
+    if (!messageContent.trim() || isLoading) return;
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: "user",
+      content: messageContent,
+    };
+
+    const loadingMessage: ChatMessage = {
+      id: (Date.now() + 1).toString(),
+      role: "assistant",
+      showLoading: true,
+    };
+
+    setMessages((prev) => [...prev, userMessage, loadingMessage]);
     setIsLoading(true);
+
     try {
       const response = await fetch("http://127.0.0.1:8000/generate-app", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_prompt: userPrompt }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_prompt: messageContent,
+        }),
       });
-      const result = await response.json();
-      return result;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
 
-  const handleSubmit = useCallback(async () => {
-    const userPrompt = value.trim();
-    if (!userPrompt || isLoading) return;
-    setValue("");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-    // Add user message on the right
-    setMessages((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), role: "user", content: userPrompt },
-    ]);
+      const data = await response.json();
 
-    // Add loading message first
-    const loadingMessageId = crypto.randomUUID();
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: loadingMessageId,
-        role: "assistant",
-        showLoading: true,
-      },
-    ]);
+      if (data.success) {
+        // Save the app version
+        const appId = await saveAppVersion(
+          data.app_jsx_code,
+          messageContent,
+          `App ${Date.now()}`
+        );
 
-    // Show loading popup only if WebContainer is not ready yet
-    if (!isWebContainerReady) {
-      setShowLoadingPopup(true);
-    }
-
-    try {
-      const result = await callGenerateAppAPI(userPrompt);
-      if (result?.app_jsx_code) {
-        // Save the new app version and get its ID
-        const appId = await saveAppVersion(result.app_jsx_code, userPrompt);
-        const appName = `App ${appVersions.length + 1}`;
-        
-        // Update app versions list
-        const updatedVersions = getAllAppVersions();
-        setAppVersions(updatedVersions);
-        setCurrentAppId(appId);
-        
-        // Replace loading message with preview message
-        setMessages((prev) => 
-          prev.map((msg) => 
-            msg.id === loadingMessageId 
-              ? { 
-                  id: crypto.randomUUID(), 
-                  role: "assistant", 
-                  showPreview: true,
-                  appId,
-                  appName,
-                  userPrompt
+        // Update messages to show preview
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === loadingMessage.id
+              ? {
+                  ...msg,
+                  showLoading: false,
+                        showPreview: true,
+                        appId: appId,
+                        appName: `App ${Date.now()}`,
+                        userPrompt: messageContent,
                 }
               : msg
           )
         );
-        
-        setShowWebContainer(true);
+
+        // Set as current app
+        setCurrentAppId(appId);
+
+        // Show loading popup and then WebContainer
+        setShowLoadingPopup(true);
+        setTimeout(() => {
+          setShowLoadingPopup(false);
+          setShowWebContainer(true);
+        }, 2000);
+      } else {
+        throw new Error(data.message || "Failed to generate app");
       }
-    } catch (e) {
-      // Replace loading message with error message
-      setMessages((prev) => 
-        prev.map((msg) => 
-          msg.id === loadingMessageId 
-            ? { 
-                id: crypto.randomUUID(), 
-                role: "assistant", 
-                content: (e as Error)?.message || "Something went wrong while generating the app."
+    } catch (error) {
+      console.error("Error generating app:", error);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === loadingMessage.id
+            ? {
+                ...msg,
+                showLoading: false,
+                content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : "Unknown error"}`,
               }
             : msg
         )
       );
     } finally {
-      // Hide loading popup if it was shown
-      if (!isWebContainerReady) {
-        setTimeout(() => {
-          setShowLoadingPopup(false);
-        }, 1000);
-      }
+      setIsLoading(false);
     }
-  }, [value, isLoading, callGenerateAppAPI, isWebContainerReady]);
+  }, [isLoading]);
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        handleSubmit();
-      }
-    },
-    [handleSubmit]
-  );
 
-  const handleSwitchApp = useCallback(async (appId: string) => {
-    const success = await switchToAppVersion(appId);
-    if (success) {
+  const handleExpandApp = useCallback(async (appId: string) => {
+    try {
+      await switchToAppVersion(appId);
       setCurrentAppId(appId);
+      setShowWebContainer(true);
+    } catch (error) {
+      console.error("Error switching to app:", error);
     }
   }, []);
 
-  const handleExpandApp = useCallback(async (appId: string) => {
-    await handleSwitchApp(appId);
-    // The WebContainer will automatically update to show the selected app
-  }, [handleSwitchApp]);
+  const handleSwitchApp = useCallback(async (appId: string) => {
+    try {
+      await switchToAppVersion(appId);
+      setCurrentAppId(appId);
+      setShowWebContainer(true);
+    } catch (error) {
+      console.error("Error switching to app:", error);
+    }
+  }, []);
 
+  // Auto-scroll to bottom when new messages are added
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   return (
-    <>
-      <div className="w-full h-screen flex flex-col bg-background">
-        {/* App Switcher Header */}
-        {appVersions.length > 0 && (
-          <div className="border-b p-4">
-            <div className="max-w-4xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">Current App:</span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-2">
-                      {currentAppId ? appVersions.find(v => v.id === currentAppId)?.name || "Unknown App" : "No App Selected"}
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    {appVersions.map((version) => (
-                      <DropdownMenuItem
-                        key={version.id}
-                        onClick={() => handleSwitchApp(version.id)}
-                        className={cn(
-                          "cursor-pointer",
-                          currentAppId === version.id && "bg-accent"
-                        )}
-                      >
-                        <div className="flex flex-col">
-                          <span className="font-medium">{version.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {version.userPrompt}
-                          </span>
-                        </div>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {appVersions.length} app{appVersions.length !== 1 ? 's' : ''} generated
-              </div>
-            </div>
-          </div>
-        )}
+    <div className="w-full h-full flex flex-col bg-neutral-950 overflow-hidden min-w-0">
 
-        <div
-          ref={containerRef}
-          className="flex-1 overflow-y-auto px-6 py-4 space-y-6"
-          role="log"
-          aria-live="polite"
-        >
-          {messages.map((m) => (
-            <div key={m.id} className="w-full"> 
-              {m.showLoading ? (
-                <div className="w-full">
-                  <div className="flex gap-6 items-start">
-                    <div className="w-80 flex-shrink-0">
-                      <div className="space-y-3">
-                        <div className="rounded-lg border bg-card text-card-foreground p-3">
-                          <div className="text-sm text-muted-foreground">Generating your app...</div>
-                        </div>
-                        <div className="h-[400px]">
-                          <div className="w-full h-full rounded-lg border bg-card text-card-foreground overflow-hidden flex items-center justify-center">
-                            <AILoadingState />
-                          </div>
+      {/* Messages container with ChatGPT-like styling */}
+      <div
+        ref={containerRef}
+        className="flex-1 overflow-y-auto min-h-0 px-4"
+        role="log"
+        aria-live="polite"
+      >
+        {messages.map((m) => (
+          <div key={m.id} className="w-full"> 
+            {m.showLoading ? (
+              <div className="w-full py-6">
+                <div className="flex gap-4 items-start">
+                  <div className="w-64 flex-shrink-0">
+                    <div className="space-y-3">
+                      <div className="text-sm text-neutral-600 dark:text-neutral-400">Generating your app...</div>
+                      <div className="h-[300px]">
+                        <div className="w-full h-full overflow-hidden flex items-center justify-center">
+                          <AILoadingState />
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              ) : m.showPreview ? (
-                <div className="w-full">
-                  <div className="flex gap-6 items-start">
-                    <div className="w-80 flex-shrink-0">
-                      <div className="space-y-3">
-                        <div className="rounded-lg border bg-card text-card-foreground p-3">
-                          <div className="text-sm text-muted-foreground">
-                            {m.appName || "App"} generated successfully
-                            {m.userPrompt && (
-                              <div className="text-xs mt-1 opacity-75">
-                                "{m.userPrompt}"
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="h-[400px]">
-                          {m.appId ? (
-                            <MorphingDialog>
-                              <MorphingDialogTrigger>
-                                <AppScreenshotPreview
-                                  appVersion={appVersions.find(v => v.id === m.appId) || {
-                                    id: m.appId,
-                                    name: m.appName || "App",
-                                    code: "",
-                                    timestamp: Date.now(),
-                                    userPrompt: m.userPrompt || ""
-                                  }}
-                                  isCurrentApp={currentAppId === m.appId}
-                                  onClick={() => handleExpandApp(m.appId!)}
-                                />
-                              </MorphingDialogTrigger>
-                            
-                            <MorphingDialogContainer>
-                              <MorphingDialogContent className="w-full h-full max-w-7xl max-h-[90vh] bg-background rounded-lg border shadow-lg flex flex-col">
-                                <div className="flex items-center justify-between p-4 border-b">
-                                  <MorphingDialogTitle className="text-lg font-semibold">
-                                    {m.appName || "App"} - Live Preview
-                                  </MorphingDialogTitle>
-                                  <MorphingDialogClose />
-                                </div>
-                                <div className="flex-1 p-4">
-                                  {showWebContainer && <WebContainerPreview />}
-                                </div>
-                              </MorphingDialogContent>
-                            </MorphingDialogContainer>
-                          </MorphingDialog>
-                          ) : (
-                            <div className="w-full h-full rounded-lg border bg-card text-card-foreground overflow-hidden flex items-center justify-center">
-                              <div className="text-sm text-muted-foreground">Loading preview...</div>
-                            </div>
-                          )}
-                        </div>
+              </div>
+            ) : m.showPreview ? (
+              <div className="w-full py-6">
+                <div className="space-y-4">
+                  <div className="text-sm text-neutral-600 dark:text-neutral-400">
+                    {m.appName || "App"} generated successfully
+                    {m.userPrompt && (
+                      <div className="text-xs mt-1 text-neutral-500 dark:text-neutral-400">
+                        "{m.userPrompt}"
                       </div>
-                    </div>
+                    )}
+                  </div>
+                  <div className="flex justify-start">
+                    {m.appId ? (
+                      <MorphingDialog>
+                        <MorphingDialogTrigger>
+                          <AppScreenshotPreview
+                            appVersion={appVersions.find(v => v.id === m.appId) || {
+                              id: m.appId,
+                              name: m.appName || "App",
+                              code: "",
+                              timestamp: Date.now(),
+                              userPrompt: m.userPrompt || ""
+                            }}
+                            isCurrentApp={currentAppId === m.appId}
+                            onClick={() => handleExpandApp(m.appId!)}
+                          />
+                        </MorphingDialogTrigger>
+                      
+                      <MorphingDialogContainer>
+                        <MorphingDialogContent className="w-full h-full max-w-5xl max-h-[80vh] bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-lg flex flex-col">
+                          <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
+                            <MorphingDialogTitle className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                              {m.appName || "App"} - Live Preview
+                            </MorphingDialogTitle>
+                            <MorphingDialogClose />
+                          </div>
+                          <div className="flex-1 p-4">
+                            {showWebContainer && <WebContainerPreview />}
+                          </div>
+                        </MorphingDialogContent>
+                      </MorphingDialogContainer>
+                    </MorphingDialog>
+                    ) : (
+                      <div className="w-64 h-64 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden flex items-center justify-center">
+                        <div className="text-sm text-neutral-500 dark:text-neutral-400">Loading preview...</div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              ) : (
-                <div className={cn("w-full flex", m.role === "user" ? "justify-end" : "justify-start")}>
-                  <div className="max-w-2xl">
-                    <div
-                      className={cn(
-                        "rounded-lg border p-4",
-                        m.role === "user" ? "bg-primary text-primary-foreground" : "bg-card text-card-foreground"
-                      )}
-                    >
-                      {m.content && <div className="whitespace-pre-wrap text-sm">{m.content}</div>}
-                    </div>
-                  </div>
+              </div>
+            ) : (
+              <div className="w-full py-6">
+                <div className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
+                  <ChatMessage
+                    id={m.id}
+                    role={m.role}
+                    content={m.content || ""}
+                    createdAt={new Date()}
+                    animation="scale"
+                  />
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="border-t p-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex gap-3 items-end">
-              <Textarea
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask me to build something…"
-                className="min-h-[56px] flex-1"
-              />
-              <Button type="button" onClick={handleSubmit} disabled={!value.trim() || isLoading}>
-                {isLoading ? <Loader2 className="size-4 animate-spin" /> : "Send"}
-              </Button>
-            </div>
+              </div>
+            )}
           </div>
-        </div>
+        ))}
+      </div>
+
+      {/* AI Input Search Area */}
+      <div className="border-t border-neutral-800 bg-neutral-950 flex-shrink-0 p-4">
+        <AI_Input_Search 
+          onMessageSubmit={handleSubmit}
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Loading Popup */}
@@ -368,8 +305,6 @@ export default function ChatUI() {
           onComplete={() => setShowLoadingPopup(false)}
         />
       )}
-    </>
+    </div>
   );
 }
-
-

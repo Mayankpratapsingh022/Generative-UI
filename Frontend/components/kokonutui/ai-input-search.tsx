@@ -18,7 +18,12 @@ import { cn } from "@/lib/utils";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
 import { ensureWebContainer, saveAppVersion } from "@/lib/webcontainerClient";
 
-export default function AI_Input_Search() {
+interface AI_Input_SearchProps {
+    onMessageSubmit?: (message: string) => void;
+    isLoading?: boolean;
+}
+
+export default function AI_Input_Search({ onMessageSubmit, isLoading: externalLoading = false }: AI_Input_SearchProps) {
     const [value, setValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { textareaRef, adjustHeight } = useAutoResizeTextarea({
@@ -43,18 +48,27 @@ export default function AI_Input_Search() {
         }
     };
 
+    const isActuallyLoading = isLoading || externalLoading;
+
     const handleSubmit = async () => {
-        if (!value.trim() || isLoading) return;
+        if (!value.trim() || isActuallyLoading) return;
         
         const userPrompt = value.trim();
         setValue("");
         adjustHeight(true);
         
+        // Call the parent callback if provided
+        if (onMessageSubmit) {
+            onMessageSubmit(userPrompt);
+            return;
+        }
+        
+        // Fallback to original behavior
         try {
             const result = await callGenerateAppAPI(userPrompt);
             if (result?.app_jsx_code) {
                 await ensureWebContainer();
-                await saveAppVersion(result.app_jsx_code, value.trim());
+                await saveAppVersion(result.app_jsx_code, userPrompt);
             }
         } catch (error) {
             console.error("Failed to generate app:", error);
@@ -76,8 +90,8 @@ export default function AI_Input_Search() {
     };
 
     return (
-        <div className="w-full py-4">
-            <div className="relative max-w-xl w-full mx-auto">
+        <div className="w-full">
+            <div className="relative w-full">
                 <div
                     role="textbox"
                     tabIndex={0}
@@ -187,16 +201,16 @@ export default function AI_Input_Search() {
                             <button
                                 type="button"
                                 onClick={handleSubmit}
-                                disabled={!value.trim() || isLoading}
+                                disabled={!value.trim() || isActuallyLoading}
                                 className={cn(
                                     "rounded-lg p-2 transition-colors",
-                                    value && !isLoading
+                                    value && !isActuallyLoading
                                         ? "bg-sky-500/15 text-sky-500"
                                         : "bg-black/5 dark:bg-white/5 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white cursor-pointer",
-                                    isLoading && "opacity-50 cursor-not-allowed"
+                                    isActuallyLoading && "opacity-50 cursor-not-allowed"
                                 )}
                             >
-                                {isLoading ? (
+                                {isActuallyLoading ? (
                                     <motion.div
                                         animate={{ rotate: 360 }}
                                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
