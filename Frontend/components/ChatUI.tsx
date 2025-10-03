@@ -20,6 +20,7 @@ import { useWebContainerReady } from "@/components/WebContainerPreloader";
 import AILoadingState from "@/components/kokonutui/ai-loading";
 import AI_Input_Search from "@/components/kokonutui/ai-input-search";
 import { ChatMessage, type Message } from "@/components/ui/chat-message";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type Role = "user" | "assistant";
 
@@ -200,12 +201,13 @@ export default function ChatUI() {
     <div className="w-full h-full flex flex-col bg-neutral-950 overflow-hidden min-w-0">
 
       {/* Messages container with ChatGPT-like styling */}
-      <div
-        ref={containerRef}
-        className="flex-1 overflow-y-auto min-h-0 px-4"
-        role="log"
-        aria-live="polite"
-      >
+      <ScrollArea className="flex-1 min-h-0">
+        <div
+          ref={containerRef}
+          className="px-4 max-w-4xl mx-auto"
+          role="log"
+          aria-live="polite"
+        >
         {messages.map((m) => (
           <div key={m.id} className="w-full"> 
             {m.showLoading ? (
@@ -276,26 +278,31 @@ export default function ChatUI() {
             ) : (
               <div className="w-full py-6">
                 <div className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
-                  <ChatMessage
-                    id={m.id}
-                    role={m.role}
-                    content={m.content || ""}
-                    createdAt={new Date()}
-                    animation="scale"
-                  />
+                  <div className={cn("max-w-[85%]", m.role === "user" ? "min-w-[200px]" : "")}>
+                    <ChatMessage
+                      id={m.id}
+                      role={m.role}
+                      content={m.content || ""}
+                      createdAt={new Date()}
+                      animation="scale"
+                    />
+                  </div>
                 </div>
               </div>
             )}
           </div>
         ))}
-      </div>
+        </div>
+      </ScrollArea>
 
       {/* AI Input Search Area */}
-      <div className="border-t border-neutral-800 bg-neutral-950 flex-shrink-0 p-4">
-        <AI_Input_Search 
-          onMessageSubmit={handleSubmit}
-          isLoading={isLoading}
-        />
+      <div className="bg-neutral-950 flex-shrink-0 p-4">
+        <div className="max-w-4xl mx-auto">
+          <AI_Input_Search 
+            onMessageSubmit={handleSubmit}
+            isLoading={isLoading}
+          />
+        </div>
       </div>
 
       {/* Loading Popup */}

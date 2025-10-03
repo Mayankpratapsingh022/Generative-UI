@@ -113,7 +113,7 @@ export default function AI_Input_Search({ onMessageSubmit, isLoading: externalLo
                             id="ai-input-04"
                             value={value}
                             placeholder="Ask me to build something..."
-                            className="w-full rounded-xl rounded-b-none px-4 py-3 bg-black/5 dark:bg-white/5 border-none dark:text-white placeholder:text-black/70 dark:placeholder:text-white/70 resize-none focus-visible:ring-0 leading-[1.2]"
+                            className="w-full rounded-xl px-4 py-3 bg-black/5 dark:bg-white/5 border-none dark:text-white placeholder:text-black/70 dark:placeholder:text-white/70 resize-none focus-visible:ring-0 leading-[1.2]"
                             ref={textareaRef}
                             onFocus={handleFocus}
                             onBlur={handleBlur}
@@ -130,7 +130,7 @@ export default function AI_Input_Search({ onMessageSubmit, isLoading: externalLo
                         />
                     </div>
 
-                    <div className="h-12 bg-black/5 dark:bg-white/5 rounded-b-xl">
+                    <div className="h-12 bg-black/5 dark:bg-white/5 rounded-xl">
                         <div className="absolute left-3 bottom-3 flex items-center gap-2">
                             <label className="cursor-pointer rounded-lg p-2 bg-black/5 dark:bg-white/5">
                                 <input type="file" className="hidden" />

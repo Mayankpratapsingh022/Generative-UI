@@ -41,7 +41,7 @@ const CustomSidebar: React.FC<CustomSidebarProps> = ({ className }) => {
       )}
     >
       {/* Header */}
-      <div className="relative border-b border-neutral-800 px-4 py-4">
+      <div className="relative px-4 py-4">
         <div className="flex items-center space-x-3">
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-neutral-800 text-white">
             <Sparkles className="size-4" />
@@ -129,7 +129,7 @@ const CustomSidebar: React.FC<CustomSidebarProps> = ({ className }) => {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-neutral-800 px-4 py-3">
+        <div className="px-4 py-3">
           <div className={cn(
             'flex items-center justify-between',
             isCollapsed && 'justify-center'
