@@ -254,14 +254,14 @@ export default function ChatUI() {
                         </MorphingDialogTrigger>
                       
                       <MorphingDialogContainer>
-                        <MorphingDialogContent className="w-full h-full max-w-5xl max-h-[80vh] bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-lg flex flex-col">
-                          <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
-                            <MorphingDialogTitle className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-                              {m.appName || "App"} - Live Preview
+                        <MorphingDialogContent className="w-full h-full max-w-6xl max-h-[90vh] bg-neutral-950 rounded-xl border border-neutral-800 shadow-2xl flex flex-col overflow-hidden">
+                          <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800 bg-neutral-900/50">
+                            <MorphingDialogTitle className="text-xl font-medium text-white">
+                              Live Preview
                             </MorphingDialogTitle>
-                            <MorphingDialogClose />
+                            <MorphingDialogClose className="!relative !top-0 !right-0 text-neutral-400 hover:text-white transition-colors p-2 hover:bg-neutral-800 rounded-lg" />
                           </div>
-                          <div className="flex-1 p-4">
+                          <div className="flex-1 bg-neutral-950">
                             {showWebContainer && <WebContainerPreview />}
                           </div>
                         </MorphingDialogContent>

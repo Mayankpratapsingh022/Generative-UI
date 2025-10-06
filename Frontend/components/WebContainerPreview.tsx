@@ -63,12 +63,12 @@ export default function WebContainerPreview() {
   }, [resolvedTheme]);
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative bg-neutral-950">
       <iframe
         ref={iframeRef}
         title="WebContainer Preview"
-        className="w-full h-full rounded border"
-        style={{ background: "white" }}
+        className="w-full h-full rounded-lg border-0"
+        style={{ background: "transparent" }}
         onLoad={() => {
           try {
             iframeRef.current?.contentWindow?.postMessage({ type: "THEME", theme: resolvedTheme }, "*");
@@ -76,7 +76,7 @@ export default function WebContainerPreview() {
         }}
       />
       {status !== "Running" && (
-        <div className="absolute top-2 left-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+        <div className="absolute top-4 left-4 text-sm text-neutral-300 bg-neutral-900/90 backdrop-blur-sm px-3 py-2 rounded-lg border border-neutral-800">
           {status}
         </div>
       )}
