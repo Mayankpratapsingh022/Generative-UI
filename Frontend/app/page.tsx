@@ -1,15 +1,7 @@
 "use client";
 
-import ChatUI from "@/components/ChatUI";
-import CustomSidebar from "@/components/CustomSidebar";
+import LandingPage from "@/components/LandingPage";
 
 export default function Home() {
-  return (
-    <div className="flex h-screen w-full bg-neutral-950">
-      <CustomSidebar />
-      <main className="flex-1 flex flex-col overflow-hidden w-full">
-        <ChatUI />
-      </main>
-    </div>
-  );
+  return <LandingPage />;
 }

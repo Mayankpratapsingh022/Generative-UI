@@ -2,6 +2,7 @@
 
 import { ChevronLeft, Home, History, Settings, Plus, Bot, Sparkles } from 'lucide-react'
 import React, { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import SidebarItem from './ui/sidebar-item'
 
@@ -11,15 +12,17 @@ interface CustomSidebarProps {
 
 const CustomSidebar: React.FC<CustomSidebarProps> = ({ className }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const pathname = usePathname()
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev)
   }
 
   const menuItems = [
-    { icon: Home, label: 'Home', active: true, href: '/' },
-    { icon: History, label: 'History', active: false, href: '/history' },
-    { icon: Settings, label: 'Settings', active: false, href: '/settings' },
+    { icon: Home, label: 'Home', active: pathname === '/', href: '/' },
+    { icon: Bot, label: 'Builder', active: pathname === '/use', href: '/use' },
+    { icon: History, label: 'History', active: pathname === '/history', href: '/history' },
+    { icon: Settings, label: 'Settings', active: pathname === '/settings', href: '/settings' },
   ]
 
   const generatedApps = [
