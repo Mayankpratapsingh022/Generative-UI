@@ -30,19 +30,19 @@ import { ThemeToggle } from "@/components/theme-toggle"
 
 // This is sample data.
 const apps = [
-  {
-    title: "Todo App",
-    url: "#",
-    icon: Bot,
-    isActive: true,
-  },
-  {
-    title: "Weather Dashboard",
-    url: "#",
-    icon: Bot,
-  },
-  {
-    title: "E-commerce Store",
+  // {
+  //   title: "Todo App",
+  //   url: "#",
+  //   icon: Bot,
+  //   isActive: true,
+  // },
+  // {
+  //   title: "Weather Dashboard",
+  //   url: "#",
+  //   icon: Bot,
+  // },
+   {
+    title: "",
     url: "#",
     icon: Bot,
   },

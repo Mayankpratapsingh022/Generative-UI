@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
 import { ensureWebContainer, saveAppVersion } from "@/lib/webcontainerClient";
+import { BackendErrorDialog } from "@/components/ui/backend-error-dialog";
 
 interface AI_Input_SearchProps {
     onMessageSubmit?: (message: string) => void;
@@ -26,6 +27,8 @@ interface AI_Input_SearchProps {
 export default function AI_Input_Search({ onMessageSubmit, isLoading: externalLoading = false }: AI_Input_SearchProps) {
     const [value, setValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [showBackendError, setShowBackendError] = useState(false);
+    const [lastUserPrompt, setLastUserPrompt] = useState<string>("");
     const { textareaRef, adjustHeight } = useAutoResizeTextarea({
         minHeight: 52,
         maxHeight: 200,
@@ -36,13 +39,27 @@ export default function AI_Input_Search({ onMessageSubmit, isLoading: externalLo
     const callGenerateAppAPI = async (userPrompt: string) => {
         try {
             setIsLoading(true);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            
             const response = await fetch("http://127.0.0.1:8000/generate-app", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ user_prompt: userPrompt }),
+                signal: controller.signal,
             });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const result = await response.json();
             return result;
+        } catch (error) {
+            // Re-throw the error to be handled by the calling function
+            throw error;
         } finally {
             setIsLoading(false);
         }
@@ -65,13 +82,20 @@ export default function AI_Input_Search({ onMessageSubmit, isLoading: externalLo
         
         // Fallback to original behavior
         try {
+            setLastUserPrompt(userPrompt);
             const result = await callGenerateAppAPI(userPrompt);
             if (result?.app_jsx_code) {
                 await ensureWebContainer();
                 await saveAppVersion(result.app_jsx_code, userPrompt);
             }
         } catch (error) {
-            console.error("Failed to generate app:", error);
+            // Check if it's a network/connection error or timeout
+            if (error instanceof TypeError && (error.message === "Failed to fetch" || error.name === "AbortError")) {
+                console.log("AI Input Search: Backend connection error detected, showing modal");
+                setShowBackendError(true);
+            } else {
+                console.error("Failed to generate app:", error);
+            }
         }
     };
 
@@ -90,6 +114,7 @@ export default function AI_Input_Search({ onMessageSubmit, isLoading: externalLo
     };
 
     return (
+        <>
         <div className="w-full">
             <div className="relative w-full">
                 <div
@@ -226,5 +251,17 @@ export default function AI_Input_Search({ onMessageSubmit, isLoading: externalLo
                 </div>
             </div>
         </div>
+
+        {/* Backend Error Dialog */}
+        <BackendErrorDialog
+            open={showBackendError}
+            onOpenChange={setShowBackendError}
+            onRetry={() => {
+                if (lastUserPrompt) {
+                    handleSubmit();
+                }
+            }}
+        />
+        </>
     );
 }

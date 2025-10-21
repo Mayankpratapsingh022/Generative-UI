@@ -5,7 +5,7 @@ from typing import List, Dict, Any, Optional
 import json
 import os
 from langchain_openai import ChatOpenAI
-from langchain.schema import SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage, HumanMessage
 import uvicorn
 from dotenv import load_dotenv
 

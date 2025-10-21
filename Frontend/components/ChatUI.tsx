@@ -7,6 +7,7 @@ import WebContainerPreview from "@/components/WebContainerPreview";
 import AppScreenshotPreview from "@/components/AppScreenshotPreview";
 import { ensureWebContainer, saveAppVersion, getAllAppVersions, switchToAppVersion, getCurrentAppId, onAppVersionsChange, type AppVersion } from "@/lib/webcontainerClient";
 import { Loader2, Maximize2 } from "lucide-react";
+import { BackendErrorDialog } from "@/components/ui/backend-error-dialog";
 import {
   MorphingDialog,
   MorphingDialogTrigger,
@@ -49,6 +50,8 @@ export default function ChatUI() {
   const [showLoadingPopup, setShowLoadingPopup] = useState(false);
   const [appVersions, setAppVersions] = useState<AppVersion[]>([]);
   const [currentAppId, setCurrentAppId] = useState<string | null>(null);
+  const [showBackendError, setShowBackendError] = useState(false);
+  const [lastUserMessage, setLastUserMessage] = useState<string>("");
   const containerRef = useRef<HTMLDivElement>(null);
   const isWebContainerReady = useWebContainerReady();
 
@@ -96,9 +99,13 @@ export default function ChatUI() {
     };
 
     setMessages((prev) => [...prev, userMessage, loadingMessage]);
+    setLastUserMessage(messageContent);
     setIsLoading(true);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch("http://127.0.0.1:8000/generate-app", {
         method: "POST",
         headers: {
@@ -107,7 +114,10 @@ export default function ChatUI() {
         body: JSON.stringify({
           user_prompt: messageContent,
         }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -152,18 +162,28 @@ export default function ChatUI() {
         throw new Error(data.message || "Failed to generate app");
       }
     } catch (error) {
-      console.error("Error generating app:", error);
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === loadingMessage.id
-            ? {
-                ...msg,
-                showLoading: false,
-                content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : "Unknown error"}`,
-              }
-            : msg
-        )
-      );
+      // Check if it's a network/connection error or timeout
+      if (error instanceof TypeError && (error.message === "Failed to fetch" || error.name === "AbortError")) {
+        console.log("Backend connection error detected, showing modal");
+        setShowBackendError(true);
+        // Remove the loading message
+        setMessages((prev) => prev.filter(msg => msg.id !== loadingMessage.id));
+      } else {
+        console.error("Error generating app:", error);
+        console.log("Other error type, showing inline message");
+        // Show inline error for other types of errors
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === loadingMessage.id
+              ? {
+                  ...msg,
+                  showLoading: false,
+                  content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : "Unknown error"}`,
+                }
+              : msg
+          )
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -312,6 +332,17 @@ export default function ChatUI() {
           onComplete={() => setShowLoadingPopup(false)}
         />
       )}
+
+      {/* Backend Error Dialog */}
+      <BackendErrorDialog
+        open={showBackendError}
+        onOpenChange={setShowBackendError}
+        onRetry={() => {
+          if (lastUserMessage) {
+            handleSubmit(lastUserMessage);
+          }
+        }}
+      />
     </div>
   );
 }

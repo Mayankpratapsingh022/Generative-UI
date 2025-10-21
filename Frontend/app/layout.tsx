@@ -5,6 +5,19 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import WebContainerPreloader from "@/components/WebContainerPreloader";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { type Metadata } from 'next'
+import {
+  ClerkProvider,
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs'
+
+
+
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,22 +40,33 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ThemeProvider
-          defaultTheme="system"
-          storageKey="ui-theme"
-        >
-          <WebContainerPreloader />
-          <SidebarProvider>
-            <div className="relative flex min-h-screen w-full">
-              {children}
-            </div>
-          </SidebarProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    // <html lang="en" suppressHydrationWarning>
+    //   <body
+    //     className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+    //   >
+    //     <ThemeProvider
+    //       defaultTheme="system"
+    //       storageKey="ui-theme"
+    //     >
+    //       <WebContainerPreloader />
+    //       <SidebarProvider>
+    //         <div className="relative flex min-h-screen w-full">
+    //           {children}
+    //         </div>
+    //       </SidebarProvider>
+    //     </ThemeProvider>
+    //   </body>
+    // </html>
+
+    <ClerkProvider>
+      <html lang="en" className="dark">
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <header className="flex justify-end  items-center p-4 gap-4 h-16">
+         
+          </header>
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

@@ -1,10 +1,11 @@
 "use client"
 
-import { ChevronLeft, Home, History, Settings, Plus, Bot, Sparkles } from 'lucide-react'
+import { ChevronLeft, Home, History, Settings, Plus, Bot, Sparkles, User, LogOut } from 'lucide-react'
 import React, { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import SidebarItem from './ui/sidebar-item'
+import { useUser, useClerk } from '@clerk/nextjs'
 
 interface CustomSidebarProps {
   className?: string
@@ -13,26 +14,32 @@ interface CustomSidebarProps {
 const CustomSidebar: React.FC<CustomSidebarProps> = ({ className }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
+  const { user } = useUser()
+  const { openUserProfile } = useClerk()
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev)
   }
 
+  const handleManageAccount = () => {
+    openUserProfile()
+  }
+
   const menuItems = [
     { icon: Home, label: 'Home', active: pathname === '/', href: '/' },
-    { icon: Bot, label: 'Builder', active: pathname === '/use', href: '/use' },
-    { icon: History, label: 'History', active: pathname === '/history', href: '/history' },
-    { icon: Settings, label: 'Settings', active: pathname === '/settings', href: '/settings' },
+    // { icon: Bot, label: 'Builder', active: pathname === '/use', href: '/use' },
+    // { icon: History, label: 'History', active: pathname === '/use', href: '/use' },
+    // { icon: Settings, label: 'Settings', active: pathname === '/use', href: '/use' },
   ]
 
   const generatedApps = [
-    { icon: Bot, label: 'Todo App', active: false, href: '/app/todo' },
-    { icon: Bot, label: 'Weather Dashboard', active: false, href: '/app/weather' },
-    { icon: Bot, label: 'E-commerce Store', active: false, href: '/app/ecommerce' },
+    // { icon: Bot, label: 'Todo App', active: false, href: '/app/todo' },
+    // { icon: Bot, label: 'Weather Dashboard', active: false, href: '/app/weather' },
+    // { icon: Bot, label: 'E-commerce Store', active: false, href: '/app/ecommerce' },
   ]
 
   const userActions = [
-    { icon: Plus, label: 'New App', active: false, href: '/new-app' },
+    { icon: Plus, label: 'New App', active: false, href: '/use' },
   ]
 
   return (
@@ -56,7 +63,7 @@ const CustomSidebar: React.FC<CustomSidebarProps> = ({ className }) => {
             )}
           >
             <span className="text-sm font-semibold text-white">Generative UI</span>
-            <span className="text-xs text-neutral-400">AI App Builder</span>
+            {/* <span className="text-xs text-neutral-400">AI App Builder</span> */}
           </div>
         </div>
         <button
@@ -118,7 +125,7 @@ const CustomSidebar: React.FC<CustomSidebarProps> = ({ className }) => {
         {/* User Profile */}
         <div className="flex cursor-pointer items-center px-4 py-3 transition hover:bg-neutral-800">
           <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-neutral-800 text-white text-sm font-medium">
-            N
+            {user?.firstName?.charAt(0) || user?.emailAddresses[0]?.emailAddress?.charAt(0) || 'U'}
           </div>
           <div
             className={cn(
@@ -126,9 +133,25 @@ const CustomSidebar: React.FC<CustomSidebarProps> = ({ className }) => {
               isCollapsed && 'hidden opacity-0',
             )}
           >
-            <span className="text-sm font-medium text-white">Mayank</span>
+            <span className="text-sm font-medium text-white">
+              {user?.firstName || user?.emailAddresses[0]?.emailAddress || 'User'}
+            </span>
             <span className="text-xs text-neutral-400">Free</span>
           </div>
+        </div>
+
+        {/* Account Management Options */}
+        <div className="px-2 py-1">
+          <button
+            onClick={handleManageAccount}
+            className={cn(
+              'flex w-full items-center space-x-3 rounded-lg px-3 py-2 text-sm text-neutral-300 transition hover:bg-neutral-800 hover:text-white',
+              isCollapsed && 'justify-center px-2'
+            )}
+          >
+            <User className="h-4 w-4" />
+            {!isCollapsed && <span>Manage Account</span>}
+          </button>
         </div>
 
         {/* Footer */}
@@ -145,13 +168,13 @@ const CustomSidebar: React.FC<CustomSidebarProps> = ({ className }) => {
             >
               © 2025 Generative UI
             </span>
-            <div className={cn(
+            {/* <div className={cn(
               'flex items-center space-x-1',
               isCollapsed && 'hidden'
             )}>
               <div className="h-2 w-2 rounded-full bg-red-500"></div>
               <span className="text-xs text-neutral-500">1 Issue</span>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
