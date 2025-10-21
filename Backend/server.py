@@ -227,11 +227,35 @@ def initialize_components():
     
     if component_parser is None:
         try:
+            # Try different paths for components.json
+            possible_paths = [
+                "./components.json",
+                "components.json",
+                os.path.join(os.path.dirname(__file__), "components.json"),
+                os.path.join(os.path.dirname(__file__), "..", "components.json"),
+                os.path.join(os.path.dirname(__file__), "..", "..", "components.json")
+            ]
+            
+            components_path = None
+            for path in possible_paths:
+                if os.path.exists(path):
+                    components_path = path
+                    print(f"Found components.json at: {path}")
+                    break
+            
+            if components_path is None:
+                print(f"Current directory: {os.getcwd()}")
+                print(f"Directory contents: {os.listdir('.')}")
+                print(f"Available paths: {possible_paths}")
+                raise FileNotFoundError("components.json not found in any expected location")
+            
             # Initialize component parser
-            component_parser = ShadcnComponentParser(COMPONENTS_JSON_PATH)
+            component_parser = ShadcnComponentParser(components_path)
             print(f"Loaded {len(component_parser.components)} shadcn components")
         except Exception as e:
             print(f"Error loading components: {e}")
+            import traceback
+            traceback.print_exc()
             raise e
     
     if llm is None:
@@ -344,6 +368,29 @@ async def test_llm():
         return {"message": response.content, "status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM test failed: {str(e)}")
+
+@app.get("/debug-files")
+async def debug_files():
+    """Debug file system on Vercel"""
+    try:
+        import os
+        from pathlib import Path
+        
+        debug_info = {
+            "current_directory": os.getcwd(),
+            "script_directory": os.path.dirname(__file__),
+            "parent_directory": os.path.dirname(os.path.dirname(__file__)),
+            "files_in_current_dir": os.listdir('.') if os.path.exists('.') else "Directory not found",
+            "files_in_script_dir": os.listdir(os.path.dirname(__file__)) if os.path.exists(os.path.dirname(__file__)) else "Directory not found",
+            "components_json_exists": os.path.exists("components.json"),
+            "components_json_in_current": os.path.exists("./components.json"),
+            "components_json_in_script": os.path.exists(os.path.join(os.path.dirname(__file__), "components.json")),
+            "components_json_in_parent": os.path.exists(os.path.join(os.path.dirname(__file__), "..", "components.json"))
+        }
+        
+        return debug_info
+    except Exception as e:
+        return {"error": str(e), "traceback": str(__import__('traceback').format_exc())}
 
 if __name__ == "__main__":
     # Get server configuration from environment variables
