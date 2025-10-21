@@ -48,7 +48,7 @@ export function BackendErrorDialog({
           </p>
           <div className="mt-4 p-3 bg-neutral-800/50 rounded-lg border border-neutral-700">
             <p className="text-xs text-neutral-400">
-              <strong>Technical Details:</strong> Failed to connect to http://127.0.0.1:8000/generate-app
+              <strong>Technical Details:</strong> Failed to connect to backend
             </p>
           </div>
         </div>

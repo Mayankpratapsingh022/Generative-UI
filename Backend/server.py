@@ -12,19 +12,43 @@ from dotenv import load_dotenv
 app = FastAPI(title="Generator", version="1.0.0")
 load_dotenv()
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+# Get environment variables
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "")
+
+# Configure CORS origins based on environment
+if ENVIRONMENT == "production":
+    # Production CORS configuration
+    if CORS_ORIGINS:
+        # If CORS_ORIGINS is provided as comma-separated string, split it
+        allowed_origins = [origin.strip() for origin in CORS_ORIGINS.split(",")]
+    else:
+        # Default production origins (add your production domains here)
+        allowed_origins = [
+            "https://yourdomain.com",
+            "https://www.yourdomain.com",
+            "https://app.yourdomain.com"
+        ]
+else:
+    # Development CORS configuration
+    allowed_origins = [
         "http://localhost:3000", 
         "http://127.0.0.1:3000",
         "http://localhost:3001", 
         "http://127.0.0.1:3001",
         "http://localhost:3002", 
-        "http://127.0.0.1:3002"
-    ],  # Frontend URLs
+        "http://127.0.0.1:3002",
+        "http://localhost:3003",
+        "http://127.0.0.1:3003"
+    ]
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 # Pydantic models
@@ -157,18 +181,27 @@ Generate the complete app.jsx code now."""
     def generate_app(self, user_prompt: str) -> tuple[str, List[str]]:
         """Generate the React app code"""
         try:
+            print(f"Creating system and human messages for prompt: {user_prompt}")
+            
             system_message = SystemMessage(content=self.generate_system_prompt())
             human_message = HumanMessage(content=self.generate_user_prompt(user_prompt))
             
+            print("Calling LLM...")
             response = self.llm.invoke([system_message, human_message])
             app_code = response.content
             
+            print(f"LLM response received, length: {len(app_code)}")
+            
             # Extract used components from the generated code
             used_components = self._extract_used_components(app_code)
+            print(f"Extracted {len(used_components)} used components")
             
             return app_code, used_components
             
         except Exception as e:
+            print(f"Error in generate_app: {str(e)}")
+            import traceback
+            traceback.print_exc()
             raise Exception(f"Error generating app: {str(e)}")
     
     def _extract_used_components(self, code: str) -> List[str]:
@@ -182,40 +215,62 @@ Generate the complete app.jsx code now."""
         
         return used_components
 
-# Initialize OpenAI LLM
-llm = ChatOpenAI(model="gpt-4o", temperature=0.1)
+# LLM will be initialized in startup event
 
-# Global component parser - initialized on startup
+# Global component parser - will be initialized lazily
 COMPONENTS_JSON_PATH = "./components.json"
 component_parser = None
 
+def initialize_components():
+    """Initialize components and LLM lazily"""
+    global component_parser, llm
+    
+    if component_parser is None:
+        try:
+            # Initialize component parser
+            component_parser = ShadcnComponentParser(COMPONENTS_JSON_PATH)
+            print(f"Loaded {len(component_parser.components)} shadcn components")
+        except Exception as e:
+            print(f"Error loading components: {e}")
+            raise e
+    
+    if llm is None:
+        try:
+            # Initialize LLM
+            llm = ChatOpenAI(model="gpt-4o", temperature=0.1)
+            print("LLM initialized successfully")
+        except Exception as e:
+            print(f"Error initializing LLM: {e}")
+            raise e
+
 @app.on_event("startup")
 async def startup_event():
-    """Initialize component parser on startup"""
-    global component_parser
-    try:
-        component_parser = ShadcnComponentParser(COMPONENTS_JSON_PATH)
-        print(f"Loaded {len(component_parser.components)} shadcn components")
-    except Exception as e:
-        print(f"Error loading components: {e}")
-        raise e
+    """Initialize component parser and LLM on startup (for non-Vercel deployments)"""
+    initialize_components()
 
 @app.post("/generate-app", response_model=AppGenerationResponse)
 async def generate_react_app(request: AppGenerationRequest):
     """
     Generate a React app.jsx file based on user requirements using available shadcn components
     """
-    global component_parser
+    global component_parser, llm
     
-    if component_parser is None:
-        raise HTTPException(status_code=500, detail="Components not loaded. Please restart the server.")
+    # Initialize components and LLM if not already done
+    try:
+        initialize_components()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to initialize: {str(e)}")
     
     try:
+        print(f"Generating app for prompt: {request.user_prompt}")
+        
         # Initialize app generator with global component parser
         app_generator = ReactAppGenerator(llm, component_parser)
         
         # Generate the app
         app_code, used_components = app_generator.generate_app(request.user_prompt)
+        
+        print(f"Successfully generated app with {len(used_components)} components")
         
         return AppGenerationResponse(
             app_jsx_code=app_code,
@@ -225,6 +280,9 @@ async def generate_react_app(request: AppGenerationRequest):
         )
         
     except Exception as e:
+        print(f"Error generating app: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error generating app: {str(e)}")
 
 @app.get("/components")
@@ -234,8 +292,11 @@ async def get_available_components():
     """
     global component_parser
     
-    if component_parser is None:
-        raise HTTPException(status_code=500, detail="Components not loaded. Please restart the server.")
+    # Initialize components if not already done
+    try:
+        initialize_components()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to initialize: {str(e)}")
     
     try:
         return {
@@ -255,9 +316,44 @@ async def get_available_components():
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "service": "Shadcn React App Generator"}
+    global component_parser, llm
+    
+    status = {
+        "status": "healthy", 
+        "service": "Shadcn React App Generator",
+        "components_loaded": component_parser is not None,
+        "llm_initialized": llm is not None
+    }
+    
+    if component_parser:
+        status["component_count"] = len(component_parser.components)
+    
+    return status
+
+@app.get("/test-llm")
+async def test_llm():
+    """Test LLM endpoint"""
+    global llm
+    
+    if llm is None:
+        raise HTTPException(status_code=500, detail="LLM not initialized")
+    
+    try:
+        from langchain_core.messages import HumanMessage
+        response = llm.invoke([HumanMessage(content="Say 'Hello, LLM is working!'")])
+        return {"message": response.content, "status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"LLM test failed: {str(e)}")
 
 if __name__ == "__main__":
+    # Get server configuration from environment variables
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8000"))
+    
+    print(f"Starting server in {ENVIRONMENT} mode")
+    print(f"CORS allowed origins: {allowed_origins}")
+    print(f"Server will run on {host}:{port}")
+    
     # Run the FastAPI server
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=host, port=port)
     

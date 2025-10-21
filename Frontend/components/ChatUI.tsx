@@ -8,6 +8,7 @@ import AppScreenshotPreview from "@/components/AppScreenshotPreview";
 import { ensureWebContainer, saveAppVersion, getAllAppVersions, switchToAppVersion, getCurrentAppId, onAppVersionsChange, type AppVersion } from "@/lib/webcontainerClient";
 import { Loader2, Maximize2 } from "lucide-react";
 import { BackendErrorDialog } from "@/components/ui/backend-error-dialog";
+import { API_URLS } from "@/lib/config";
 import {
   MorphingDialog,
   MorphingDialogTrigger,
@@ -106,7 +107,7 @@ export default function ChatUI() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
-      const response = await fetch("http://127.0.0.1:8000/generate-app", {
+      const response = await fetch(API_URLS.GENERATE_APP, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

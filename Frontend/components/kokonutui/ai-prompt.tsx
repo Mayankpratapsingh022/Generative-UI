@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ensureWebContainer, saveAppVersion } from "@/lib/webcontainerClient";
 import Anthropic from "@/components/kokonutui/anthropic";
 import AnthropicDark from "@/components/kokonutui/anthropic-dark";
+import { API_URLS } from "@/lib/config";
 
 const OPENAI_SVG = (
     <div>
@@ -150,7 +151,7 @@ export default function AI_Prompt({ onMessageSubmit, isLoading: externalLoading 
             setIsLoading(true);
             console.log("Calling API with prompt:", userPrompt);
             
-            const response = await fetch("http://127.0.0.1:8000/generate-app", {
+            const response = await fetch(API_URLS.GENERATE_APP, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -177,7 +178,7 @@ export default function AI_Prompt({ onMessageSubmit, isLoading: externalLoading 
             console.error("❌ Error calling generate-app API:", error);
             if (error instanceof TypeError && error.message === "Failed to fetch") {
                 console.error("This usually means the backend server is not running or there's a CORS issue.");
-                console.error("Make sure the backend server is running on http://localhost:8000");
+                console.error("Make sure the backend server is running");
             }
             throw error;
         } finally {

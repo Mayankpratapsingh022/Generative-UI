@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
 import { ensureWebContainer, saveAppVersion } from "@/lib/webcontainerClient";
 import { BackendErrorDialog } from "@/components/ui/backend-error-dialog";
+import { API_URLS } from "@/lib/config";
 
 interface AI_Input_SearchProps {
     onMessageSubmit?: (message: string) => void;
@@ -42,7 +43,7 @@ export default function AI_Input_Search({ onMessageSubmit, isLoading: externalLo
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
             
-            const response = await fetch("http://127.0.0.1:8000/generate-app", {
+            const response = await fetch(API_URLS.GENERATE_APP, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ user_prompt: userPrompt }),
